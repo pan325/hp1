@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古墓考古队</title>
+    <!-- Open Graph 卡片信息 -->
+    <meta property="og:title" content="古墓考古队">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pan325.github.io/hp1/">
+    <meta property="og:image" content="https://pan325.github.io/hp1/thief.jpg">
+    <meta property="og:description" content="沉浸式考古互动剧情，一分钟追查盗墓真相！"><style>
+    <style>
+        /* 基础重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        body {
+            padding: 10px;
+            font-family: "Comic Sans MS", "Marker Felt", sans-serif;
+            background-image: url("tomb-bg.jpg");
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 80px;
+        }
+        /* 计时器 */
+        .timer {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #8b4513;
+            padding: 8px 20px;
+            border: 2px solid #8b4513;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.95);
+            min-width: 120px;
+        }
+        /* 容器 */
+        .main-container {
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+            padding: 15px 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            border: 1px solid #d2b48c;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        /* 两栏布局 */
+        .columns-wrap {
+            display: flex;
+            gap: 10px;
+            flex-wrap: nowrap;
+            justify-content: center;
+            padding-bottom: 8px;
+            width: 320px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .column {
+            flex: 0 0 160px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        /* 标题 */
+        .column-title {
+            text-align: center;
+            font-size: 16px;
+            color: #8b4513;
+            margin-bottom: 5px;
+            padding-bottom: 3px;
+            border-bottom: 2px solid #d2b48c;
+        }
+        /* 左栏卡片 */
+.word-card {
+    width: 160px;
+    height: 240px;              /* 统一高度 */
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: justify;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid #d2b48c;
+    display: flex;
+    align-items: center;        /* 上下居中 */
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+/* 代号样式 */
+.code-name {
+    display: inline-block;
+    background-color: #8b4513;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 5px;
+    font-weight: bold;
+}
+
+/* 左栏卡片配色（保持不变） */
+.word-card:nth-child(2) { background-color: #f5f1e6; }
+.word-card:nth-child(3) { background-color: #f0e6d2; }
+.word-card:nth-child(4) { background-color: #e6d9c0; }
+.word-card:nth-child(5) { background-color: #dbc8a0; }
+.word-card:nth-child(6) { background-color: #d2b98b; }
+.word-card:nth-child(7) { background-color: #c8ac78; }
+.word-card:nth-child(8) { background-color: #be9f66; }
+
+/* 右栏卡片 */
+.meaning-card {
+    width: 160px;
+    height: 240px;              /* 与左栏完全一致 */
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #8b4513;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid #d2b48c;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-end;      /* 文字贴底 */
+    justify-content: center;
+}
+
+/* 右栏背景图 */
+.meaning-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #f8f4ea;
+    opacity: 0.9;
+    z-index: -1;
+}
+
+/* 右栏文字 */
+.meaning-card span {
+    width: 100%;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+}
+        /* 图片加载失败提示 */
+        .meaning-card.no-image::before {
+            background-color: #f0e6d2;
+            content: '🔍';
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b4513;
+        }
+        /* 选中状态 */
+        .selected {
+            border: 3px solid #8b4513;
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+            transform: scale(1.02);
+        }
+        /* 消失动画 */
+        .fade-out {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            border: none;
+            transition: all 0.5s ease;
+        }
+        /* 音乐控制按钮 */
+        .music-control {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #d2b48c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            font-size: 20px;
+            color: #8b4513;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        /* 游戏开始页面 */
+       /* 开始页面：强制满屏 + 内容绝对居中 */
+       .start-screen {
+            position: fixed;
+            inset: 0;                    /* 上右下左全部 0，真正全屏 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;     /* 垂直居中 */
+           align-items: center;         /* 水平居中 */
+           text-align: center;          /* 内部文字也居中 */
+           padding: 20px;
+           box-sizing: border-box;
+           background-color: rgba(40, 20, 15, 0.95);
+           z-index: 2000;
+         }
+
+        /* 内部段落去掉默认 margin 造成的偏移 */
+        .start-screen h2,
+        .start-screen .historical-intro,
+        .start-screen .start-desc {
+        margin: 0 0 15px 0;   /* 只保留底部间距 */
+        }
+        .start-title {
+            font-size: 28px;
+            color: #fff;
+            margin-bottom: 25px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .start-desc {
+            font-size: 18px;
+            color: #f8f4ea;
+            line-height: 1.8;
+            margin-bottom: 35px;
+            max-width: 500px;
+        }
+        .start-btn {
+            padding: 12px 35px;
+            font-size: 18px;
+            background-color: #ffffff;
+            color: #8b4513;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .start-btn:hover {
+            background-color: #f0e6d2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        /* 匹配成功弹窗 */
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .success-img {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            object-fit: cover;
+            border: 3px solid #ffffff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        .success-text {
+            font-size: 22px;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .story-ending {
+            font-size: 16px;
+            color: #f0e6d2;
+            margin-bottom: 20px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+        .restart-btn {
+            padding: 10px 30px;
+            font-size: 16px;
+            background-color: #8b4513;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .restart-btn:hover {
+            background-color: #6d3811;
+        }
+    </style>
+</head>
+<body>
+    <!-- 置顶计时器 -->
+    <div class="timer" id="timer">00:00</div>
+    
+    <!-- 音乐控制按钮 -->
+    <div class="music-control" id="musicControl">⏸</div>
+    
+    <!-- 游戏开始页面 -->
+    <div class="start-screen" id="startScreen">
+        <h2 class="start-title">古墓考古队</h2>
+        <p class="start-desc">
+            考古队发现一座神秘古墓，<br>
+            但团队中混入了<br>
+            想偷文物的盗墓者！<br>
+            左列是7位队员的证词，<br>
+            右列是他们的真实身份<br>
+            你的任务是找出隐藏的盗墓者<br>
+            小心！真相可能出乎你的意料……
+        </p>
+        <button class="start-btn" id="startBtn">开始探秘</button>
+    </div>
+    
+    <!-- 匹配成功弹窗 -->
+    <div class="success-modal" id="successModal">
+        <img src="artifact.jpg" alt="考古发现的珍贵文物" class="success-img">
+        <div class="success-text" id="successText">恭喜！你成功识破了盗墓者的伪装！总用时：00:00</div>
+        <div class="story-ending" id="storyEnding">故事结局：盗墓者被当场抓获，珍贵文物得到保护。考古队成功解开了古墓的秘密，发现了一段被遗忘的历史...</div>
+        <button class="restart-btn" id="restartBtn">再来一次探险</button>
+    </div>
+    
+    <!-- 游戏主容器 -->
+    <div class="main-container" id="gameContainer" style="display: none;">
+        <div class="columns-wrap">
+            <!-- 左栏：队员证词 -->
+            <div class="column" id="wordColumn">
+                <h3 class="column-title">队员证词</h3>
+                <!-- 动态内容将在这里生成 -->
+            </div>
+            <!-- 右栏：真实身份 -->
+            <div class="column" id="meaningColumn">
+                <h3 class="column-title">真实身份</h3>
+                <!-- 动态内容将在这里生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="explore-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 全局变量
+            let selectedWordId = null;
+            let matchedPairs = 0;
+            let startTime = null;
+            let timerInterval = null;
+            let isMusicPlaying = false;
+            
+            // DOM元素
+            const timerEl = document.getElementById('timer');
+            const musicControl = document.getElementById('musicControl');
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const startScreen = document.getElementById('startScreen');
+            const startBtn = document.getElementById('startBtn');
+            const gameContainer = document.getElementById('gameContainer');
+            const successModal = document.getElementById('successModal');
+            const successText = document.getElementById('successText');
+            const storyEnding = document.getElementById('storyEnding');
+            const restartBtn = document.getElementById('restartBtn');
+            const wordColumn = document.getElementById('wordColumn');
+            const meaningColumn = document.getElementById('meaningColumn');
+
+            // 考古队角色数据（使用代号代替真实姓名）
+            const teamMembers = [
+                {
+                    id: "1",
+                    codeName: "玄武",
+                    text: "我昨晚一直在研究壁画，发现这个古墓可能属于汉代。朱雀说他看到有人在文物库附近徘徊。",
+                    meaningId: "1",
+                    meaningText: "考古队长",
+                    image: "captain.jpg",
+                    clue: "负责整个考古项目，随身携带古墓结构图"
+                },
+                {
+                    id: "2",
+                    codeName: "白虎",
+                    text: "凌晨三点我去巡夜，看到青龙鬼鬼祟祟地拿着个布包从主墓室出来，行为很可疑。",
+                    meaningId: "2",
+                    meaningText: "随队医生",
+                    image: "doctor.jpg",
+                    clue: "负责队员健康，帐篷里有医疗箱和药品"
+                },
+                {
+                    id: "3",
+                    codeName: "朱雀",
+                    text: "我整晚都在整理出土的陶器，发现少了一个玉璧。玄武可以证明我没离开过工作区。",
+                    meaningId: "3",
+                    meaningText: "记录员",
+                    image: "recorder.jpg",
+                    clue: "负责记录所有发现，有一本详细的考古日志"
+                },
+                {
+                    id: "4",
+                    codeName: "青龙",
+                    text: "我半夜听到文物库有动静，但我年纪大了腿脚不便，就没去查看。白虎说看到我有问题，这是诬陷！",
+                    meaningId: "4",
+                    meaningText: "后勤人员",
+                    image: "logistics.jpg",
+                    clue: "负责团队饮食和设备，知道所有工具的存放位置"
+                },
+                {
+                    id: "5",
+                    codeName: "玉衡",
+                    text: "我在研究墓碑时发现，这座墓的主人是位古代将军。奇怪的是，主墓室有被人动过的痕迹。",
+                    meaningId: "5",
+                    meaningText: "历史专家",
+                    image: "historian.jpg",
+                    clue: "专门研究古代文字，能破译各种铭文和符号"
+                },
+                {
+                    id: "6",
+                    codeName: "开阳",
+                    text: "我是新来的，昨晚跟着玄武整理资料到深夜。我看到有人影从玉衡帐篷前闪过。",
+                    meaningId: "6",
+                    meaningText: "实习生",
+                    image: "intern.jpg",
+                    clue: "第一次参加考古活动，对周围环境还不熟悉"
+                },
+                {
+                    id: "7",
+                    codeName: "天玑",
+                    text: "我什么都不知道，昨晚一直睡在帐篷里。大家都在互相指责，其实真正的小偷藏得很深。",
+                    meaningId: "7",
+                    meaningText: "盗墓者",
+                    image: "thief.jpg",
+                    clue: "临时加入团队，对古墓结构异常熟悉，随身携带特殊工具"
+                }
+            ];
+
+            // 随机排序
+            function shuffleArray(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            }
+
+            // 渲染卡片
+            function renderGameCards() {
+                wordColumn.innerHTML = '<h3 class="column-title">队员证词</h3>';
+                meaningColumn.innerHTML = '<h3 class="column-title">真实身份</h3>';
+                
+                const shuffledMembers = shuffleArray(teamMembers);
+                const shuffledRoles = shuffleArray(teamMembers);
+
+                // 左栏证词
+                shuffledMembers.forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = `word-card`;
+                    card.setAttribute('data-id', member.id);
+                    card.innerHTML = `<span class="code-name">${member.codeName}</span>${member.text}`;
+                    wordColumn.appendChild(card);
+                });
+
+                // 右栏身份
+                shuffledRoles.forEach(member => {
+                    const card = document.createElement('div');
+                    card.className = `meaning-card`;
+                    card.setAttribute('data-meaning-id', member.meaningId);
+                    card.innerHTML = `<span>${member.meaningText}</span>`;
+                    
+                    // 设置本地图片
+                    const imgUrl = `url('${member.image}')`;
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .meaning-card[data-meaning-id="${member.meaningId}"]::before {
+                            background-image: ${imgUrl};
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    // 图片加载失败处理
+                    const img = new Image();
+                    img.src = member.image;
+                    img.onerror = function() {
+                        card.classList.add('no-image');
+                    };
+                    
+                    meaningColumn.appendChild(card);
+                });
+
+                bindCardEvents();
+            }
+
+            // 绑定点击事件
+            function bindCardEvents() {
+                // 左栏点击
+                const wordCards = document.querySelectorAll('.word-card');
+                wordCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        if (!isMusicPlaying) {
+                            backgroundMusic.play().catch(e => console.log("播放失败:", e));
+                        }
+                        
+                        wordCards.forEach(c => c.classList.remove('selected'));
+                        this.classList.add('selected');
+                        selectedWordId = this.getAttribute('data-id');
+                    });
+                });
+
+                // 右栏点击
+                const meaningCards = document.querySelectorAll('.meaning-card');
+                meaningCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        if (!selectedWordId) return;
+                        
+                        const correctMeaningId = teamMembers.find(m => m.id === selectedWordId).meaningId;
+                        const cardMeaningId = this.getAttribute('data-meaning-id');
+                        
+                        if (correctMeaningId === cardMeaningId) {
+                            // 匹配成功
+                            const matchedWord = document.querySelector(`.word-card[data-id="${selectedWordId}"]`);
+                            if (matchedWord) {
+                                matchedWord.classList.add('fade-out');
+                                this.classList.add('fade-out');
+                                matchedPairs++;
+                                
+                                // 显示线索
+                                const clue = teamMembers.find(m => m.id === selectedWordId).clue;
+                                alert(`发现线索：${clue}`);
+                            }
+                            selectedWordId = null;
+                            wordCards.forEach(c => c.classList.remove('selected'));
+                            
+                            // 全部匹配成功
+                            if (matchedPairs === 7) {
+                                clearInterval(timerInterval);
+                                backgroundMusic.volume = 0.3;
+                                successText.textContent = `恭喜！你成功识破了盗墓者的伪装！总用时：${timerEl.textContent}`;
+                                successModal.style.display = 'flex';
+                            }
+                        } else {
+                            // 匹配失败，给个提示
+                            const member = teamMembers.find(m => m.meaningId === cardMeaningId);
+                            alert(`不对哦～ 这个人的真实身份不是${member.meaningText}，再分析一下证词吧！`);
+                            wordCards.forEach(c => c.classList.remove('selected'));
+                            selectedWordId = null;
+                        }
+                    });
+                });
+            }
+
+            // 计时器
+            function updateTimer() {
+                const now = new Date();
+                const diff = Math.floor((now - startTime) / 1000);
+                const minutes = String(Math.floor(diff / 60)).padStart(2, '0');
+                const seconds = String(diff % 60).padStart(2, '0');
+                timerEl.textContent = `${minutes}:${seconds}`;
+            }
+
+            // 开始游戏
+            function startGame() {
+                startScreen.style.display = 'none';
+                gameContainer.style.display = 'block';
+                
+                matchedPairs = 0;
+                selectedWordId = null;
+                startTime = new Date();
+                
+                clearInterval(timerInterval);
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+                
+                renderGameCards();
+                
+                // 尝试播放音乐
+                backgroundMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicControl.textContent = "⏸";
+                }).catch(e => {
+                    console.log("自动播放需要用户交互:", e);
+                    isMusicPlaying = false;
+                    musicControl.textContent = "▶";
+                });
+            }
+
+            // 重置游戏
+            function resetGame() {
+                successModal.style.display = 'none';
+                backgroundMusic.volume = 1;
+                startGame();
+            }
+
+            // 音乐控制
+            musicControl.addEventListener('click', function() {
+                if (isMusicPlaying) {
+                    backgroundMusic.pause();
+                    musicControl.textContent = "▶";
+                } else {
+                    backgroundMusic.play().then(() => {
+                        musicControl.textContent = "⏸";
+                    }).catch(e => console.log("播放失败，请确认本地音乐文件存在:", e));
+                }
+                isMusicPlaying = !isMusicPlaying;
+            });
+
+            // 监听音乐状态
+            backgroundMusic.addEventListener('play', function() {
+                isMusicPlaying = true;
+                musicControl.textContent = "⏸";
+            });
+            
+            backgroundMusic.addEventListener('pause', function() {
+                isMusicPlaying = false;
+                musicControl.textContent = "▶";
+            });
+
+            // 按钮事件
+            startBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', resetGame);
+        });
+    </script>
+</body>
+</html>
