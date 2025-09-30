@@ -239,13 +239,15 @@
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        .start-desc {
-            font-size: 18px;
-            color: #f8f4ea;
-            line-height: 1.8;
-            margin-bottom: 35px;
-            max-width: 500px;
-        }
+       /* 一句一行 + 不黑白 */
+.start-desc {
+    white-space: pre-line;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #f8f4ea;
+    margin: 0 0 25px 0;
+    text-align: center;
+} 
         .start-btn {
             padding: 12px 35px;
             font-size: 18px;
@@ -325,16 +327,8 @@
     
     <!-- 游戏开始页面 -->
     <div class="start-screen" id="startScreen">
-      .start-desc {
-    white-space: pre-line;   /* 强制识别 <br> 换行 */
-    font-size: 14px;
-    line-height: 1.8;
-    color: #c9a87a;
-    margin: 0 0 25px 0;
-    text-align: center;        /* 保持居中 */
-}
- <h2 class="start-title">古墓考古队</h2>
-        <p class="start-desc">
+      <h2 class="start-title">古墓考古队</h2>
+      <p class="start-desc">
             考古队发现一座神秘古墓，<br>
             但团队中混入了<br>
             想偷文物的盗墓者！<br>
@@ -653,6 +647,7 @@
     </script>
 </body>
 </html>
+
 
 
 
